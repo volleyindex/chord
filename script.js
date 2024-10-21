@@ -12,11 +12,8 @@ const unweightedMatrix =  [[0, 0, 0, 3, 0, 0, 2, 2, 3, 1, 1], [3, 0, 3, 3, 0, 0,
 // Weighted matrix
 const weightedMatrix = [[0, 1, 0, 10, 0, 1, 5, 5, 11, 3, 3], [11, 0, 11, 11, 1, 0, 3, 11, 11, 0, 11], [0, 1, 0, 10, 0, 3, 3, 10, 3, 3, 11], [5, 1, 3, 0, 1, 1, 0, 3, 0, 3, 3], [0, 11, 0, 11, 0, 11, 3, 5, 11, 10, 1], [11, 0, 10, 11, 1, 0, 10, 5, 11, 11, 0], [10, 10, 10, 0, 10, 3, 0, 0, 11, 11, 10], [10, 1, 3, 10, 10, 10, 0, 0, 0, 5, 10], [1, 1, 10, 0, 1, 1, 1, 0, 0, 5, 1], [10, 0, 10, 10, 5, 1, 1, 10, 10, 0, 0], [10, 1, 1, 10, 11, 0, 3, 3, 11, 0, 0]]
 
-
-
 const teams = ['CSUN', 'Cal Poly', 'Cal State Bakersfield', 'Cal State Fullerton', "Hawai'i", 'Long Beach State', 'UC Davis', 'UC Irvine', 'UC Riverside', 'UC San Diego', 'UC Santa Barbara'];
 const colors = ['#ce1126', '#154734', '#003594', '#ff7900', "#000000", '#ecaa00', '#b3a369', '#0c2340', '#0073d4', '#adb7b9', '#30007f']; // Different colors for each node
-
 
 let currentMatrix = unweightedMatrix; // Start with unweighted matrix
 const res = d3.chord()
@@ -27,6 +24,8 @@ const tooltip = d3.select("#tooltip");
 let showPathTooltips = true; // Flag to control path tooltips visibility
 let weightedView = false; // Flag to control view type
 let useWinnerColor = true; // Flag for winner color toggle
+let isFirstLoad = true; // Flag to track first load
+let useAnimate = false; // Flag for animate option
 
 function drawChords(filterIndex = null, useWinnerColor = true) {
     // Clear previous drawings except the legend
@@ -39,7 +38,7 @@ function drawChords(filterIndex = null, useWinnerColor = true) {
         .sortSubgroups(d3.descending)(currentMatrix);
 
     // Draw groups (arcs)
-    svg
+    const arcs = svg
         .datum(res)
         .append("g")
         .selectAll("g")
@@ -50,8 +49,16 @@ function drawChords(filterIndex = null, useWinnerColor = true) {
             .innerRadius(200)
             .outerRadius(210))
         .attr("class", "arc")
-        .style("fill", (d, i) => colors[i]) // Apply color based on index
-        .on("mouseover", function(event, d) {
+        .style("fill", (d, i) => colors[i]); // Apply color based on index
+
+    // Animate arcs on first load
+    if (isFirstLoad) {
+        arcs.style("opacity", 0)
+            .transition()
+            .duration(1000)
+            .style("opacity", 1);
+    }
+    arcs.on("mouseover", function(event, d) {
             tooltip.style("display", "block")
                    .html(`<strong>${teams[d.index]}</strong>`)
                    .style("left", (event.pageX + 5) + "px")
@@ -65,7 +72,7 @@ function drawChords(filterIndex = null, useWinnerColor = true) {
         });
 
     // Draw ribbons (links)
-    svg
+    const ribbons = svg
         .datum(res)
         .append("g")
         .selectAll("path")
@@ -88,8 +95,22 @@ function drawChords(filterIndex = null, useWinnerColor = true) {
             } else {
                 return "#a2c9d8"; // Default color when winner color is off
             }
-        })
-        .on("mouseover", function(event, d) {
+        });
+
+    // Animate ribbons on first load
+    if (isFirstLoad | useAnimate) {
+        ribbons.style("opacity", 0)
+               .transition()
+               .duration(1000)
+               .delay((d, i) => (Math.floor(Math.random() * 50))*80+(isFirstLoad?1000:0)) // Stagger the animation
+               .style("opacity", 0.7);
+        
+        isFirstLoad = false; // Set the flag to false after first load
+    }else{
+	    ribbons.style("opacity", 0.7);
+    }
+
+    ribbons.on("mouseover", function(event, d) {
             if (showPathTooltips) {
                 const sourceName = teams[d.source.index];
                 const targetName = teams[d.target.index];
@@ -154,4 +175,11 @@ document.getElementById("toggle-winner-color").addEventListener("click", () => {
     const button = document.getElementById("toggle-winner-color");
     button.textContent = `Use Winner Color: ${useWinnerColor ? "On" : "Off"}`; // Update button text
     drawChords(null, useWinnerColor); // Redraw the chords with updated color settings
+});
+
+// Button event listener for toggling animate
+document.getElementById("toggle-animate").addEventListener("click", () => {
+    useAnimate = !useAnimate; // Toggle the flag
+    const button = document.getElementById("toggle-animate");
+    button.textContent = `Animate: ${useAnimate ? "On" : "Off"}`; // Update button text
 });
