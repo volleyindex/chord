@@ -1,4 +1,3 @@
-// Create the SVG area
 const svg = d3.select("#my_dataviz")
     .append("svg")
     .attr("width", 440)
@@ -7,25 +6,30 @@ const svg = d3.select("#my_dataviz")
     .attr("transform", "translate(220,220)");
 
 // Input data: unweighted matrix
-const unweightedMatrix =  [[0, 0, 0, 3, 0, 0, 2, 2, 3, 1, 1], [3, 0, 3, 3, 0, 0, 1, 3, 3, 0, 3], [0, 0, 0, 3, 0, 1, 1, 3, 1, 1, 3], [2, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1], [0, 3, 0, 3, 0, 3, 1, 2, 3, 3, 0], [3, 0, 3, 3, 0, 0, 3, 2, 3, 3, 0], [3, 3, 3, 0, 3, 1, 0, 0, 3, 3, 3], [3, 0, 1, 3, 3, 3, 0, 0, 0, 2, 3], [0, 0, 3, 0, 0, 0, 0, 0, 0, 2, 0], [3, 0, 3, 3, 2, 0, 0, 3, 3, 0, 0], [3, 0, 0, 3, 3, 0, 1, 1, 3, 0, 0]];
-
+const unweightedMatrix =  [[0, 0, 1, 3, 2, 0, 2, 2, 3, 1, 1], [3, 0, 3, 3, 0, 3, 1, 3, 3, 1, 3], [3, 0, 0, 3, 1, 1, 1, 3, 1, 1, 3], [2, 0, 1, 0, 0, 0, 0, 1, 2, 1, 1], [3, 3, 3, 3, 0, 3, 1, 2, 3, 3, 0], [3, 2, 3, 3, 0, 0, 3, 2, 3, 3, 2], [3, 3, 3, 3, 3, 1, 0, 3, 3, 3, 3], [3, 0, 1, 3, 3, 3, 1, 0, 3, 2, 3], [0, 0, 3, 3, 0, 0, 0, 0, 0, 2, 0], [3, 3, 3, 3, 2, 0, 0, 3, 3, 0, 1], [3, 0, 0, 3, 3, 3, 1, 1, 3, 3, 0]];
 // Weighted matrix
-const weightedMatrix = [[0, 1, 0, 10, 0, 1, 5, 5, 11, 3, 3], [11, 0, 11, 11, 1, 0, 3, 11, 11, 0, 11], [0, 1, 0, 10, 0, 3, 3, 10, 3, 3, 11], [5, 1, 3, 0, 1, 1, 0, 3, 0, 3, 3], [0, 11, 0, 11, 0, 11, 3, 5, 11, 10, 1], [11, 0, 10, 11, 1, 0, 10, 5, 11, 11, 0], [10, 10, 10, 0, 10, 3, 0, 0, 11, 11, 10], [10, 1, 3, 10, 10, 10, 0, 0, 0, 5, 10], [1, 1, 10, 0, 1, 1, 1, 0, 0, 5, 1], [10, 0, 10, 10, 5, 1, 1, 10, 10, 0, 0], [10, 1, 1, 10, 11, 0, 3, 3, 11, 0, 0]]
+const weightedMatrix = [[0, 1, 3, 10, 5, 1, 5, 5, 11, 3, 3], [11, 0, 11, 11, 1, 10, 3, 11, 11, 3, 11], [10, 1, 0, 10, 3, 3, 3, 10, 3, 3, 11], [5, 1, 3, 0, 1, 1, 1, 3, 5, 3, 3], [10, 11, 10, 11, 0, 11, 3, 5, 11, 10, 1], [11, 5, 10, 11, 1, 0, 10, 5, 11, 11, 5], [10, 10, 10, 11, 10, 3, 0, 10, 11, 11, 10], [10, 1, 3, 10, 10, 10, 3, 0, 11, 5, 10], [1, 1, 10, 10, 1, 1, 1, 1, 0, 5, 1], [10, 10, 10, 10, 5, 1, 1, 10, 10, 0, 3], [10, 1, 1, 10, 11, 10, 3, 3, 11, 10, 0]];
+
+const game_order = [[0, 5, 47, 19, 55, 24, 40, 16, 34, 32, 10], [5, 0, 8, 29, 38, 50, 13, 25, 18, 52, 35], [47, 8, 0, 15, 45, 30, 36, 20, 41, 27, 4], [19, 29, 15, 0, 11, 42, 51, 1, 46, 37, 26], [55, 38, 45, 11, 0, 22, 28, 6, 33, 14, 44], [24, 50, 30, 42, 22, 0, 3, 39, 9, 12, 54], [40, 13, 36, 51, 28, 3, 0, 49, 23, 7, 21], [16, 25, 20, 1, 6, 39, 49, 0, 53, 43, 31], [34, 18, 41, 46, 33, 9, 23, 53, 0, 2, 17], [32, 52, 27, 37, 14, 12, 7, 43, 2, 0, 48], [10, 35, 4, 26, 44, 54, 21, 31, 17, 48, 0]];
 
 const teams = ['CSUN', 'Cal Poly', 'Cal State Bakersfield', 'Cal State Fullerton', "Hawai'i", 'Long Beach State', 'UC Davis', 'UC Irvine', 'UC Riverside', 'UC San Diego', 'UC Santa Barbara'];
 const colors = ['#ce1126', '#154734', '#003594', '#ff7900', "#000000", '#ecaa00', '#b3a369', '#0c2340', '#0073d4', '#adb7b9', '#30007f']; // Different colors for each node
 
-let currentMatrix = unweightedMatrix; // Start with unweighted matrix
+let currentMatrix = weightedMatrix; // Start with unweighted matrix
 const res = d3.chord()
-    .padAngle(0.05)
     .sortSubgroups(d3.descending)(currentMatrix);
 
 const tooltip = d3.select("#tooltip");
 let showPathTooltips = true; // Flag to control path tooltips visibility
-let weightedView = false; // Flag to control view type
+let weightedView = true; // Flag to control view type
 let useWinnerColor = true; // Flag for winner color toggle
 let isFirstLoad = true; // Flag to track first load
 let useAnimate = false; // Flag for animate option
+
+function doNothing(d,i){
+	console.log(game_order[d["source"]["index"]][d["target"]["index"]]);
+	return i
+}
 
 function drawChords(filterIndex = null, useWinnerColor = true) {
     // Clear previous drawings except the legend
@@ -102,7 +106,7 @@ function drawChords(filterIndex = null, useWinnerColor = true) {
         ribbons.style("opacity", 0)
                .transition()
                .duration(1000)
-               .delay((d, i) => (Math.floor(Math.random() * 50))*80+(isFirstLoad?1000:0)) // Stagger the animation
+               .delay((d, i) => game_order[d["source"]["index"]][d["target"]["index"]]*100+(isFirstLoad?1000:0)) // Stagger the animation
                .style("opacity", 0.7);
         
         isFirstLoad = false; // Set the flag to false after first load
